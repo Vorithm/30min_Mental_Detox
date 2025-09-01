@@ -310,11 +310,14 @@ elif st.session_state.step == 4:
 
     if "wisdom_tab" not in st.session_state:
         st.session_state.wisdom_tab = "Sacred Wisdom"
-
+        
     if "sacred_content_index" not in st.session_state:
         st.session_state.sacred_content_index = 0
     if "guided_content_index" not in st.session_state:
         st.session_state.guided_content_index = 0
+        
+    if "show_guided_prompt" not in st.session_state:
+        st.session_state.show_guided_prompt = False
 
     spacer_l, tab_col1, tab_col2, spacer_r = st.columns([3,1,1,3])
     with tab_col1:
@@ -328,6 +331,14 @@ elif st.session_state.step == 4:
 
     st.markdown('<div class="wisdom-tab-content">', unsafe_allow_html=True)
     if st.session_state.wisdom_tab == "Sacred Wisdom":
+        if st.session_state.show_guided_prompt:
+            st.markdown(
+                f'<div style="background:#e1e9ed; padding:16px 10px; border-radius:10px; margin-bottom:21px;">'
+                f'<b><span style="color:black;">Hey {st.session_state.name}, please check out the <u>Guided Teachings</u> tab for more personalized healing videos and audio—it complements this wisdom perfectly!</span></b>'
+                f'</div>',
+                unsafe_allow_html=True
+            )
+            st.session_state.show_guided_prompt = False
         df = detox_df[
             (detox_df["issue"].str.strip().str.lower() == st.session_state.issue.strip().lower()) &
             (detox_df["language"].str.strip().str.lower() == st.session_state.language.strip().lower())
@@ -418,7 +429,6 @@ elif st.session_state.step == 4:
                             '</style>'
                         )
                         st.markdown(responsive_html, unsafe_allow_html=True)
-                
         st.markdown('</div>', unsafe_allow_html=True)
 
     nav_sp_l, nav_col1, nav_col2, nav_sp_r = st.columns([3,1,1,3])
@@ -426,6 +436,7 @@ elif st.session_state.step == 4:
         if st.button("Show me other option", key="btn_other"):
             if st.session_state.wisdom_tab == "Sacred Wisdom":
                 st.session_state.sacred_content_index += 1
+                st.session_state.show_guided_prompt = True
             else:
                 st.session_state.guided_content_index += 1
             st.rerun()
@@ -780,5 +791,6 @@ elif st.session_state.step == 8:
         <span style="font-size:1rem;">— Buddhist Loving-Kindness Meditation</span>
     </div>
     """, unsafe_allow_html=True)
+
 
 
