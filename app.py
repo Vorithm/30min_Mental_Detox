@@ -409,28 +409,40 @@ elif st.session_state.step == 4:
                     continue
                 
                 if "youtube" in link.lower() or "youtu.be" in link.lower():
-                    # Extract YouTube video ID
+                    # Extract YouTube video ID (corrected regex to handle query params like ?si=)
                     m = re.search(r'(?:youtube(?:-nocookie)?\.com/(?:[^/\n\s]+/\S+/|(?:v|e(?:mbed)?|shorts)/|\S*?[?&]v=)|youtu\.be/)([a-zA-Z0-9_-]{11})', link)
                     if m:
                         yt_id = m.group(1)
+                        # Responsive embed HTML with CSS for mobile fullscreen-like behavior (scoped to avoid affecting buttons)
                         responsive_html = (
-                            '<div style="position: relative; width: 100%; max-width: 800px; margin: 0 auto; text-align: center;">'
-                            '<iframe src="https://www.youtube.com/embed/' + yt_id + '" '
+                            '<div class="responsive-video" style="position: relative; width: 100%; max-width: 800px; margin: 0 auto; text-align: center;">'
+                            '<iframe '
+                            'src="https://www.youtube.com/embed/' + yt_id + '" '
                             'frameborder="0" allowfullscreen '
                             'style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">'
                             '</iframe>'
-                            '<div style="padding-top: 56.25%;"></div>'
+                            '<div class="aspect-ratio" style="padding-top: 56.25%;"></div>'  # Maintains 16:9 aspect ratio
                             '</div>'
                             '<style>'
-                            '@media (max-width: 600px) {'
-                            'div { height: 100vh; padding-top: 0 !important; }'
-                            'iframe { height: 100vh !important; object-fit: cover; }'
+                            '@media (max-width: 600px) {  /* Target mobile phones */'
+                            '  .responsive-video { '
+                            '    height: 100vh;  /* Fill full viewport height on mobile */'
+                            '  }'
+                            '  .responsive-video .aspect-ratio { '
+                            '    padding-top: 0 !important;  /* Allow vertical fill */'
+                            '  }'
+                            '  .responsive-video iframe {'
+                            '    height: 100vh !important;  /* Force vertical fill without rotation */'
+                            '    object-fit: cover;  /* Zoom/crop to fill screen */'
+                            '  }'
                             '}'
                             '</style>'
                         )
                         st.markdown(responsive_html, unsafe_allow_html=True)
+                    else:
+                        st.warning(f"Invalid YouTube link: {link}")
+                
         st.markdown('</div>', unsafe_allow_html=True)
-
     nav_sp_l, nav_col1, nav_col2, nav_sp_r = st.columns([3,1,1,3])
     with nav_col1:
         if st.button("Show me other option", key="btn_other"):
@@ -791,6 +803,7 @@ elif st.session_state.step == 8:
         <span style="font-size:1rem;">— Buddhist Loving-Kindness Meditation</span>
     </div>
     """, unsafe_allow_html=True)
+
 
 
 
