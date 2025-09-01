@@ -402,7 +402,7 @@ elif st.session_state.step == 4:
                     m = re.search(r'(?:youtube(?:-nocookie)?\.com/(?:[^/\n\s]+/\S+/|(?:v|e(?:mbed)?|shorts)/|\S*?[?&]v=)|youtu\.be/)([a-zA-Z0-9_-]{11})', link)
                     if m:
                         yt_id = m.group(1)
-                         responsive_html = (
+                        responsive_html = (
                             '<div style="position: relative; width: 100%; max-width: 800px; margin: 0 auto; text-align: center;">'
                             '<iframe src="https://www.youtube.com/embed/' + yt_id + '" '
                             'frameborder="0" allowfullscreen '
@@ -780,4 +780,5 @@ elif st.session_state.step == 8:
         <span style="font-size:1rem;">— Buddhist Loving-Kindness Meditation</span>
     </div>
     """, unsafe_allow_html=True)
+
 
