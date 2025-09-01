@@ -402,14 +402,22 @@ elif st.session_state.step == 4:
                     m = re.search(r'(?:youtube(?:-nocookie)?\.com/(?:[^/\n\s]+/\S+/|(?:v|e(?:mbed)?|shorts)/|\S*?[?&]v=)|youtu\.be/)([a-zA-Z0-9_-]{11})', link)
                     if m:
                         yt_id = m.group(1)
-                        st.components.v1.html(
-                            f'<div style="text-align: center; margin: 0 auto;">'
-                            f'<iframe width="800" height="500" src="https://www.youtube.com/embed/{yt_id}" '
-                            f'frameborder="0" allowfullscreen style="border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);"></iframe>',
-                            width=800, height=500  
+                         responsive_html = (
+                            '<div style="position: relative; width: 100%; max-width: 800px; margin: 0 auto; text-align: center;">'
+                            '<iframe src="https://www.youtube.com/embed/' + yt_id + '" '
+                            'frameborder="0" allowfullscreen '
+                            'style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">'
+                            '</iframe>'
+                            '<div style="padding-top: 56.25%;"></div>'
+                            '</div>'
+                            '<style>'
+                            '@media (max-width: 600px) {'
+                            'div { height: 100vh; padding-top: 0 !important; }'
+                            'iframe { height: 100vh !important; object-fit: cover; }'
+                            '}'
+                            '</style>'
                         )
-                    else:
-                        st.warning(f"Invalid YouTube link: {link}")
+                        st.markdown(responsive_html, unsafe_allow_html=True)
                 
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -772,3 +780,4 @@ elif st.session_state.step == 8:
         <span style="font-size:1rem;">— Buddhist Loving-Kindness Meditation</span>
     </div>
     """, unsafe_allow_html=True)
+
