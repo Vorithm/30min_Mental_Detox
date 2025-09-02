@@ -265,7 +265,7 @@ elif st.session_state.step == 3:
         st.rerun()
 
 
-#-----Page 4: Wisdom & Guidance -----
+# -----Page 4: Wisdom & Guidance -----
 elif st.session_state.step == 4:
     st.markdown("""
     <style>
@@ -308,112 +308,68 @@ elif st.session_state.step == 4:
     st.markdown(f'<div class="wisdom-title">Wisdom for Your Soul, {st.session_state.name}</div>', unsafe_allow_html=True)
     st.markdown('<div class="wisdom-sub">Ancient wisdom and modern guidance for healing</div>', unsafe_allow_html=True)
 
-    if "wisdom_tab" not in st.session_state:
-        st.session_state.wisdom_tab = "Sacred Wisdom"
-        
-    if "sacred_content_index" not in st.session_state:
-        st.session_state.sacred_content_index = 0
-    if "guided_content_index" not in st.session_state:
-        st.session_state.guided_content_index = 0
-        
-    if "show_guided_prompt" not in st.session_state:
-        st.session_state.show_guided_prompt = False
+    if "content_index" not in st.session_state:
+        st.session_state.content_index = 0
+    if "show_prompt" not in st.session_state:
+        st.session_state.show_prompt = False
 
-    spacer_l, tab_col1, tab_col2, spacer_r = st.columns([3,1,1,3])
-    with tab_col1:
-        if st.button("Sacred Wisdom", key="tab_sacred"):
-            st.session_state.wisdom_tab = "Sacred Wisdom"
-            st.rerun()
-    with tab_col2:
-        if st.button("Guided Teachings", key="tab_guided"):
-            st.session_state.wisdom_tab = "Guided Teachings"
-            st.rerun()
-
-    st.markdown('<div class="wisdom-tab-content">', unsafe_allow_html=True)
-    if st.session_state.wisdom_tab == "Sacred Wisdom":
-        if st.session_state.show_guided_prompt:
-            st.markdown(
-                f'<div style="background:#e1e9ed; padding:16px 10px; border-radius:10px; margin-bottom:21px;">'
-                f'<b><span style="color:black;">Hey {st.session_state.name}, please check out the <u>Guided Teachings</u> tab for more personalized healing videos and audio—it complements this wisdom perfectly!</span></b>'
-                f'</div>',
-                unsafe_allow_html=True
-            )
-            st.session_state.show_guided_prompt = False
-        df = detox_df[
-            (detox_df["issue"].str.strip().str.lower() == st.session_state.issue.strip().lower()) &
-            (detox_df["language"].str.strip().str.lower() == st.session_state.language.strip().lower())
-        ]
-        if df.empty:
-            sample = [("Perform your duty equipoised, abandoning all attachment to success or failure.",
-                       "Bhagavad Gita 2.48",
-                       "Anxiety comes from attachment to outcomes. Focus on the present moment and your duty."),
-                      ("One who is steady in both pleasure and pain, and treats gold and stone equally.",
-                       "Bhagavad Gita 14.24",
-                       "Peace comes from equanimity. All experiences are temporary.")]
-            for q, ref, tip in sample:
-                st.markdown(f"""
-                    <div class="wisdom-card">
-                        <span class="star">★</span>
-                        <blockquote>{q}</blockquote>
-                        <span class="wisdom-ref">— {ref}</span>
-                        <div class="wisdom-meaning"><b>Meaning:</b> {tip}</div>
-                    </div>""", unsafe_allow_html=True)
-        else:
-            num_quotes = 2
-            start_idx = (st.session_state.sacred_content_index * num_quotes) % len(df)
-            end_idx = start_idx + num_quotes
-            if end_idx > len(df):
-                selected_df = pd.concat([df.iloc[start_idx:], df.iloc[:end_idx - len(df)]])
-            else:
-                selected_df = df.iloc[start_idx:end_idx]
-            for _, r in selected_df.iterrows():
-                st.markdown(f"""
-                    <div class="wisdom-card">
-                        <span class="star">★</span>
-                        <blockquote>{r['quote']}</blockquote>
-                        <span class="wisdom-ref">— {r.get('refrence','')}</span>
-                        <div class="wisdom-meaning"><b>Meaning:</b> {r.get('tips','')}</div>
-                    </div>""", unsafe_allow_html=True)
-
-        st.markdown(f"""
-            <div class="growth-card">
-                <span class="heart-icon">❤</span>
-                "Remember, dear {st.session_state.name}, every master was once a disaster.
-                Every pro was once an amateur. You are exactly where you need to be on your journey of growth."
-            </div>""", unsafe_allow_html=True)
-
-    else:  # Guided Teachings
-        df = detox_df[
+    # Filter dataframe for the selected issue and language
+    df = detox_df[
         (detox_df["issue"].str.strip().str.lower() == st.session_state.issue.strip().lower()) &
         (detox_df["language"].str.strip().str.lower() == st.session_state.language.strip().lower())
     ]
-        if df.empty:
-            st.warning("No guided teachings found for the selected issue and language. Please check your dataset.")
-            _, back_center, _ = st.columns([1,2,1])
-            with back_center:
-                if st.button("⬅  Back to issue list", key="back_no_guided"):
-                    st.session_state.step = 2
-                    st.session_state.current_question = 0
-                    st.session_state.answers = {}
-                    st.rerun()
-            st.stop()
+
+    st.markdown('<div class="wisdom-tab-content">', unsafe_allow_html=True)
+
+    # Display Sacred Wisdom quotes (first part of merged content)
+    if df.empty:
+        sample = [("Perform your duty equipoised, abandoning all attachment to success or failure.",
+                   "Bhagavad Gita 2.48",
+                   "Anxiety comes from attachment to outcomes. Focus on the present moment and your duty."),
+                  ("One who is steady in both pleasure and pain, and treats gold and stone equally.",
+                   "Bhagavad Gita 14.24",
+                   "Peace comes from equanimity. All experiences are temporary.")]
+        for q, ref, tip in sample:
+            st.markdown(f"""
+                <div class="wisdom-card">
+                    <span class="star">★</span>
+                    <blockquote>{q}</blockquote>
+                    <span class="wisdom-ref">— {ref}</span>
+                    <div class="wisdom-meaning"><b>Meaning:</b> {tip}</div>
+                </div>""", unsafe_allow_html=True)
+    else:
+        # Show 2 quotes at a time, cycling through
+        num_quotes = 2
+        total_items = len(df) * 2  # Assuming each row has quotes and links; adjust if needed
+        start_idx = (st.session_state.content_index * num_quotes) % len(df)
+        end_idx = start_idx + num_quotes
+        if end_idx > len(df):
+            selected_df = pd.concat([df.iloc[start_idx:], df.iloc[:end_idx - len(df)]])
         else:
-            import re  
-            row = df.iloc[st.session_state.guided_content_index % len(df)]
-            links_str = str(row.get("links",""))
-            if not links_str.strip():
-                st.warning("No video or audio links found for this selection.")
+            selected_df = df.iloc[start_idx:end_idx]
+        for _, r in selected_df.iterrows():
+            st.markdown(f"""
+                <div class="wisdom-card">
+                    <span class="star">★</span>
+                    <blockquote>{r['quote']}</blockquote>
+                    <span class="wisdom-ref">— {r.get('refrence','')}</span>
+                    <div class="wisdom-meaning"><b>Meaning:</b> {r.get('tips','')}</div>
+                </div>""", unsafe_allow_html=True)
+
+    # Merged Guided Teachings content (videos/audio)
+    if not df.empty:
+        import re
+        row = df.iloc[st.session_state.content_index % len(df)]
+        links_str = str(row.get("links", ""))
+        if links_str.strip():
             for link in links_str.split(','):
                 link = link.strip()
                 if not link:
                     continue
-                
                 if "youtube" in link.lower() or "youtu.be" in link.lower():
-                    # Extract YouTube video ID (corrected regex to handle query params like ?si=)
                     m = re.search(r'(?:youtube(?:-nocookie)?\.com/(?:[^/\n\s]+/\S+/|(?:v|e(?:mbed)?|shorts)/|\S*?[?&]v=)|youtu\.be/)([a-zA-Z0-9_-]{11})', link)
                     if m:
                         yt_id = m.group(1)
-                        # Responsive embed HTML with CSS for mobile fullscreen-like behavior (scoped to avoid affecting buttons)
                         responsive_html = (
                             '<div class="responsive-video" style="position: relative; width: 100%; max-width: 800px; margin: 0 auto; text-align: center;">'
                             '<iframe '
@@ -441,22 +397,28 @@ elif st.session_state.step == 4:
                         st.markdown(responsive_html, unsafe_allow_html=True)
                     else:
                         st.warning(f"Invalid YouTube link: {link}")
-                
-        st.markdown('</div>', unsafe_allow_html=True)
+        else:
+            st.warning("No video or audio links found for this selection.")
+
+    st.markdown(f"""
+        <div class="growth-card">
+            <span class="heart-icon">❤</span>
+            "Remember, dear {st.session_state.name}, every master was once a disaster.
+            Every pro was once an amateur. You are exactly where you need to be on your journey of growth."
+        </div>""", unsafe_allow_html=True)
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
     nav_sp_l, nav_col1, nav_col2, nav_sp_r = st.columns([3,1,1,3])
     with nav_col1:
         if st.button("Show me other option", key="btn_other"):
-            if st.session_state.wisdom_tab == "Sacred Wisdom":
-                st.session_state.sacred_content_index += 1
-                st.session_state.show_guided_prompt = True
-            else:
-                st.session_state.guided_content_index += 1
+            st.session_state.content_index += 1
+            st.session_state.show_prompt = True
             st.rerun()
     with nav_col2:
         if st.button("Continue to Next Step", key="btn_next"):
             st.session_state.step = 5
             st.rerun()
-
 
 # --- Page 5: Meditation Timer ---
 elif st.session_state.step == 5:
@@ -707,13 +669,8 @@ elif st.session_state.step == 7:
             st.session_state.ritual_stage = "write"
             st.rerun()
 
-#-------Last Page: Summary -------
+# -------Last Page: Summary -------
 elif st.session_state.step == 8:
-    minutes = 0
-    if 'meditation_time' in st.session_state:
-        total_seconds = st.session_state.meditation_time
-        minutes = int(total_seconds // 60)  
-
     st.markdown("""
     <style>
         [data-testid="stAppViewContainer"] { background: linear-gradient(to bottom, #92B9B6 0%, #E9D5B3 100%) !important; }
@@ -750,12 +707,6 @@ elif st.session_state.step == 8:
 
     st.markdown(f"""
     <div class='summary-cards'>
-        <div class='summary-card'>
-            <div class='card-icon'>🕒</div>
-            <div class='card-label'>Time Invested</div>
-            <div class='card-value-purple'>{minutes} minutes</div>
-            <div style='font-size:.97rem; color:#8f92ab;'>in self-care</div>
-        </div>
         <div class='summary-card'>
             <div class='card-icon'>❤️</div>
             <div class='card-label'>Mood Addressed</div>
@@ -794,16 +745,12 @@ elif st.session_state.step == 8:
     with mid:
          if st.button("🔄 Start New Journey", key="restart", type="primary"):
                     st.session_state.step = 1
-                    st.session_state.meditation_time  = 0
-                    st.session_state.meditation_start = None
-                   
+
     st.markdown("""
     <div class='affirmation-section'>
         "May you be happy, may you be healthy, may you be at peace, may you live with ease."<br>
         <span style="font-size:1rem;">— Buddhist Loving-Kindness Meditation</span>
     </div>
     """, unsafe_allow_html=True)
-
-
 
 
